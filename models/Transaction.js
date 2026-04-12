@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const transactionSchema = new mongoose.Schema({
-    fromUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    fromUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     toUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Can be null for admin add-money
     adminWalletId: { type: String }, // Fallback for admin
     amount: { type: Number, required: true },

@@ -50,8 +50,8 @@ const registerUser = async (req, res) => {
         });
 
         await Transaction.create({
-            fromUser: null,
-            toUser: user._id,
+            fromUser: user._id,
+            toUser: null,
             amount: 100,
             type: 'cashback',
             status: 'success',

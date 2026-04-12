@@ -66,9 +66,8 @@ const getHistory = async (req, res) => {
                 displayType: doc.type,
                 // Ensure otherUser is always a plain string
                 otherUser: doc.toUser?.name || doc.toUser?.walletId || 'SagarPe Admin',
-                // Keep references as strings to prevent rendering objects
-                fromUser: doc.fromUser.toString(),
-                toUser: doc.toUser?._id?.toString() || 'admin'
+                fromUser: doc.fromUser ? doc.fromUser.toString() : 'system',
+                toUser: doc.toUser?._id?.toString() || 'system'
             };
         });
 
