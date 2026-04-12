@@ -27,7 +27,7 @@ const User = require('./models/User');
 mongoose.connect(process.env.MONGO_URI)
     .then(async () => {
         console.log('MongoDB Connected');
-        
+
         // Auto-promote sutharsagar710@gmail.com to Admin
         try {
             await User.findOneAndUpdate(
@@ -48,6 +48,6 @@ mongoose.connect(process.env.MONGO_URI)
             console.log('Startup cleanup error:', adminErr.message);
         }
 
-        app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+        app.listen(PORT, () => console.log(`New Server running on port ${PORT}`));
     })
     .catch(err => console.log(err));
