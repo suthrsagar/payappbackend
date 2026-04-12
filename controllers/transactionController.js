@@ -11,7 +11,10 @@ const sendMoney = async (req, res) => {
         if (!toUser) return res.status(404).json({ message: 'Recipient not found' });
         if (fromUser.balance < amount) return res.status(400).json({ message: 'Insufficient balance' });
         
-        if (pin !== fromUser.pin) return res.status(400).json({ message: 'Invalid PIN' });
+        // Strict string comparison
+        if (pin.toString() !== fromUser.pin.toString()) {
+            return res.status(400).json({ message: 'Invalid PIN' });
+        }
         
         if (fromUser.walletId === toWalletId) return res.status(400).json({ message: 'Cannot send money to yourself' });
 
@@ -83,7 +86,9 @@ const requestWithdraw = async (req, res) => {
         const user = await User.findById(req.user._id);
         if (!user) return res.status(404).json({ message: 'User not found' });
         
-        if (user.pin !== pin) return res.status(400).json({ message: 'Invalid PIN' });
+        if (user.pin.toString() !== pin.toString()) {
+            return res.status(400).json({ message: 'Invalid PIN' });
+        }
         if (user.balance < amount) return res.status(400).json({ message: 'Insufficient balance' });
 
         // Deduct balance immediately

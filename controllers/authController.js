@@ -34,16 +34,15 @@ const registerUser = async (req, res) => {
             counter++;
         }
 
-        console.log("Hashing password and PIN...");
+        console.log("Hashing password...");
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-        const hashedPin = await bcrypt.hash(pin.toString(), salt);
 
         const user = await User.create({
             name,
             email: lowerEmail,
             password: hashedPassword,
-            pin: pin,
+            pin: pin.toString(), // Store 6-digit PIN as string
             walletId,
             balance: 1000
         });

@@ -22,15 +22,12 @@ const getUserProfile = async (req, res) => {
 const setPin = async (req, res) => {
     const { pin } = req.body;
     try {
-        if (!pin || pin.length !== 6 || isNaN(pin)) {
+        if (!pin || pin.toString().length !== 6 || isNaN(pin)) {
             return res.status(400).json({ message: 'PIN must be exactly 6 digits' });
         }
 
-        const salt = await bcrypt.genSalt(10);
-        const hashedPin = await bcrypt.hash(pin.toString(), salt);
-
         const user = await User.findById(req.user._id);
-        user.pin = hashedPin;
+        user.pin = pin.toString(); // Store as plain string for simplicity
         await user.save();
 
         res.json({ message: 'PIN set successfully' });
@@ -45,7 +42,8 @@ const verifyPinAndGetBalance = async (req, res) => {
         const user = await User.findById(req.user._id);
         if (!user.pin) return res.status(400).json({ message: 'PIN not set' });
 
-        if (pin === user.pin) {
+        // Force string comparison
+        if (pin.toString() === user.pin.toString()) {
             res.json({ balance: user.balance });
         } else {
             res.status(401).json({ message: 'Incorrect PIN' });
