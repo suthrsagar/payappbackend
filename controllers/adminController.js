@@ -26,18 +26,30 @@ exports.adminLogin = async (req, res) => {
 // Get Dashboard Stats
 exports.getStats = async (req, res) => {
     try {
-        const totalUsers = await User.countDocuments();
+        const totalUsers = await User.countDocuments({ role: 'user' });
         const totalTransactions = await Transaction.countDocuments();
         
+        // Withdrawal specific stats
+        const totalWithdrawals = await Transaction.countDocuments({ type: 'withdraw' });
+        const approvedWithdrawals = await Transaction.countDocuments({ type: 'withdraw', status: 'success' });
+        const rejectedWithdrawals = await Transaction.countDocuments({ type: 'withdraw', status: 'rejected' });
+        const pendingWithdrawals = await Transaction.countDocuments({ type: 'withdraw', status: 'pending' });
+
         const totalMoneyResult = await Transaction.aggregate([
-            { $match: { status: "success" } },
+            { $match: { status: "success", type: { $ne: "withdraw" } } },
             { $group: { _id: null, total: { $sum: "$amount" } } }
         ]);
 
         res.json({
             totalUsers,
             totalTransactions,
-            totalMoney: totalMoneyResult[0]?.total || 0
+            totalMoney: totalMoneyResult[0]?.total || 0,
+            withdrawStats: {
+                total: totalWithdrawals,
+                approved: approvedWithdrawals,
+                rejected: rejectedWithdrawals,
+                pending: pendingWithdrawals
+            }
         });
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
@@ -54,10 +66,57 @@ exports.getAllUsers = async (req, res) => {
     }
 };
 
+// Send Cashback to specific user
+exports.sendCashback = async (req, res) => {
+    const { userId, amount } = req.body;
+    try {
+        if (!userId || !amount) return res.status(400).json({ message: 'Missing data' });
+
+        // RATE LIMIT: Check if a cashback was sent to this user in the last 5 minutes
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+        const lastCashback = await Transaction.findOne({
+            toUser: userId,
+            type: 'cashback',
+            createdAt: { $gt: fiveMinutesAgo }
+        });
+
+        if (lastCashback) {
+            return res.status(400).json({ 
+                message: 'One gift already sent! Please wait 5 minutes before sending another to the same user.' 
+            });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        user.balance += parseFloat(amount);
+        user.hasUnreadReward = true; // Trigger popup for user
+        await user.save();
+
+        await Transaction.create({
+            fromUser: null,
+            toUser: userId,
+            amount: parseFloat(amount),
+            type: 'cashback',
+            status: 'success',
+            transactionRef: 'Gift from Admin'
+        });
+
+        res.json({ message: `Success! ₹${amount} gift sent.`, balance: user.balance });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 // Get Withdraw Requests
 exports.getWithdrawRequests = async (req, res) => {
+    const { status } = req.query; // optional: 'success', 'rejected', 'pending'
     try {
-        const requests = await Transaction.find({ type: 'withdraw', status: 'pending' })
+        let query = { type: 'withdraw' };
+        if (status) query.status = status;
+        else query.status = 'pending'; // default
+
+        const requests = await Transaction.find(query)
             .populate('fromUser', 'name email walletId')
             .sort({ createdAt: -1 });
         res.json(requests);
@@ -119,3 +178,5 @@ exports.getAllTransactions = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+module.exports = exports;

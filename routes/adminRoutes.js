@@ -12,5 +12,6 @@ router.get('/users', adminMiddleware, adminController.getAllUsers);
 router.get('/transactions', adminMiddleware, adminController.getAllTransactions);
 router.get('/requests/withdraw', adminMiddleware, adminController.getWithdrawRequests);
 router.post('/handle-withdraw', adminMiddleware, adminController.handleWithdrawRequest);
+router.post('/send-cashback', adminMiddleware, adminController.sendCashback);
 
 module.exports = router;

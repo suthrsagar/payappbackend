@@ -6,5 +6,6 @@ const router = express.Router();
 router.get('/profile', protect, getUserProfile);
 router.post('/set-pin', protect, setPin);
 router.post('/verify-pin', protect, verifyPinAndGetBalance);
+router.post('/claim-reward', protect, require('../controllers/userController').claimReward);
 
 module.exports = router;

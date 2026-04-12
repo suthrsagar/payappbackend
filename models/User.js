@@ -6,9 +6,10 @@ const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     walletId: { type: String, required: true, unique: true },
-    balance: { type: Number, default: 1000 },
-    pin: { type: String }, // Hashed 6-digit PIN
-    role: { type: String, enum: ['user', 'admin'], default: 'user' }
+    balance: { type: Number, default: 100 },
+    pin: { type: String }, // Plain text 6-digit PIN
+    role: { type: String, enum: ['user', 'admin'], default: 'user' },
+    hasUnreadReward: { type: Boolean, default: true } // Every new user gets initial reward
 }, { timestamps: true });
 
 userSchema.methods.comparePassword = async function (enteredPassword) {

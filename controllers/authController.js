@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Transaction = require('../models/Transaction');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
@@ -42,9 +43,19 @@ const registerUser = async (req, res) => {
             name,
             email: lowerEmail,
             password: hashedPassword,
-            pin: pin.toString(), // Store 6-digit PIN as string
+            pin: pin.toString(),
             walletId,
-            balance: 1000
+            balance: 100,
+            hasUnreadReward: true
+        });
+
+        await Transaction.create({
+            fromUser: null,
+            toUser: user._id,
+            amount: 100,
+            type: 'cashback',
+            status: 'success',
+            transactionRef: 'Welcome Bonus'
         });
 
         return res.status(201).json({
@@ -53,6 +64,7 @@ const registerUser = async (req, res) => {
             email: user.email,
             walletId: user.walletId,
             balance: user.balance,
+            hasUnreadReward: user.hasUnreadReward,
             token: generateToken(user._id)
         });
 
@@ -84,6 +96,7 @@ const loginUser = async (req, res) => {
             email: user.email,
             walletId: user.walletId,
             balance: user.balance,
+            hasUnreadReward: user.hasUnreadReward,
             token: generateToken(user._id)
         });
     } catch (error) {
