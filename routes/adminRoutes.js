@@ -13,5 +13,7 @@ router.get('/transactions', adminMiddleware, adminController.getAllTransactions)
 router.get('/requests/withdraw', adminMiddleware, adminController.getWithdrawRequests);
 router.post('/handle-withdraw', adminMiddleware, adminController.handleWithdrawRequest);
 router.post('/send-cashback', adminMiddleware, adminController.sendCashback);
+router.patch('/users/:userId/toggle-status', adminMiddleware, adminController.toggleUserStatus);
+router.delete('/users/:userId', adminMiddleware, adminController.deleteUser);
 
 module.exports = router;

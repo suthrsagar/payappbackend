@@ -179,4 +179,36 @@ exports.getAllTransactions = async (req, res) => {
     }
 };
 
+// Toggle User Ban Status
+exports.toggleUserStatus = async (req, res) => {
+    const { userId } = req.params;
+    try {
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        user.status = user.status === 'banned' ? 'active' : 'banned';
+        await user.save();
+
+        res.json({ message: `User ${user.status === 'banned' ? 'banned' : 'unbanned'} successfully`, status: user.status });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// Delete User
+exports.deleteUser = async (req, res) => {
+    const { userId } = req.params;
+    try {
+        const user = await User.findByIdAndDelete(userId);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        // Optionally delete associated transactions
+        await Transaction.deleteMany({ $or: [{ fromUser: userId }, { toUser: userId }] });
+
+        res.json({ message: 'User and their data deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 module.exports = exports;

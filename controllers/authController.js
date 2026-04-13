@@ -89,6 +89,10 @@ const loginUser = async (req, res) => {
             return res.status(400).json({ message: "Invalid email or password" });
         }
 
+        if (user.status === 'banned') {
+            return res.status(403).json({ message: "Your account has been banned. Please contact admin." });
+        }
+
         return res.json({
             _id: user._id,
             name: user.name,
