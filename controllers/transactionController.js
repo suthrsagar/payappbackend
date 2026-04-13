@@ -108,4 +108,20 @@ const requestWithdraw = async (req, res) => {
     }
 };
 
-module.exports = { sendMoney, getHistory, requestWithdraw };
+// Request Add Money
+const requestAddMoney = async (req, res) => {
+    const { amount } = req.body;
+    try {
+        const transaction = await Transaction.create({
+            fromUser: req.user._id,
+            amount,
+            type: 'add-money',
+            status: 'pending'
+        });
+        res.json({ message: 'Add money request submitted', transactionId: transaction._id });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { sendMoney, getHistory, requestWithdraw, requestAddMoney };
