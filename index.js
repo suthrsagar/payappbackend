@@ -17,7 +17,7 @@ app.use('/api/transaction', require('./routes/transactionRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 
 app.get('/', (req, res) => {
-    res.send('new SagarPe API is running...');
+    res.send('SagarPe API is running...');
 });
 
 const PORT = process.env.PORT || 5000;
