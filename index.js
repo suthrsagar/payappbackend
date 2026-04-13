@@ -17,7 +17,7 @@ app.use('/api/transaction', require('./routes/transactionRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 
 app.get('/', (req, res) => {
-    res.send('new SagarPe API is running...');
+    res.send('SagarPe API is running...');
 });
 
 const PORT = process.env.PORT || 5000;
@@ -28,13 +28,22 @@ mongoose.connect(process.env.MONGO_URI)
     .then(async () => {
         console.log('MongoDB Connected');
 
-        // Auto-promote sutharsagar710@gmail.com to Admin
+        // Auto-promote sutharsagar710@gmail.com to Admin & Fix missing walletIds
         try {
             await User.findOneAndUpdate(
                 { email: 'sutharsagar710@gmail.com' },
                 { role: 'admin' }
             );
-            console.log('Admin check completed: sutharsagar710@gmail.com is Admin');
+            console.log('Admin check completed');
+
+            // Find users missing walletId and fix them
+            const usersToFix = await User.find({ $or: [{ walletId: { $exists: false } }, { walletId: '' }, { walletId: null }] });
+            for (const u of usersToFix) {
+                const cleanName = u.name.toLowerCase().replace(/[^a-z0-9]/g, '') || 'user';
+                u.walletId = `${cleanName}${Math.floor(1000 + Math.random() * 9000)}@SagarPe`;
+                await u.save();
+                console.log(`Fixed walletId for user: ${u.email} -> ${u.walletId}`);
+            }
 
             // Fix for "username_1" duplicate key error
             const collection = mongoose.connection.collection('users');

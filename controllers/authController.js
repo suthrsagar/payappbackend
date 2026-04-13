@@ -24,15 +24,14 @@ const registerUser = async (req, res) => {
         const userExists = await User.findOne({ email: lowerEmail });
         if (userExists) return res.status(400).json({ message: 'User already exists' });
 
-        let cleanName = name.toLowerCase().replace(/\s+/g, '');
+        let cleanName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
         let walletId = `${cleanName}@SagarPe`;
         
         let existingWallet = await User.findOne({ walletId });
-        let counter = 1;
         while (existingWallet) {
-            walletId = `${cleanName}${counter}@SagarPe`;
+            const randomSuffix = Math.floor(100 + Math.random() * 900);
+            walletId = `${cleanName}${randomSuffix}@SagarPe`;
             existingWallet = await User.findOne({ walletId });
-            counter++;
         }
 
         console.log("Hashing password...");
